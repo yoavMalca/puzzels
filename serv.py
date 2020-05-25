@@ -7,13 +7,14 @@ import tkinter as tk
 import random
 import time
 import msvcrt as m
-
+import math 
 server_socket=socket.socket()
 server_socket.bind(('0.0.0.0',8820))
 server_socket.listen(5)
 open_client_sockets=[]
 messages_to_send=[]
-
+numm=0
+file_location="watermelon.jpg"
 class game:
     def __init__(self,ImageObject,open_client_sockets):
         self.ImageObject=ImageObject# תמונת פתירת הפאזל
@@ -50,82 +51,115 @@ class game:
     def play(self):
     
         global server_socket
-        rlist,wlist,xlist=select.select([server_socket]+self.open_client_sockets,self.open_client_sockets,[])
-        messages_to_send=[]
+       
+        
         chachaw=False
-        for socket in rlist:
-            
+        for socket in self.open_client_sockets:
+            messages_to_send=[]
+            #socket.send("your turn".encode())
             #while (True):
             string=socket.recv(1024).decode()
+            if string=="game_over":
+                for yoav_socket in self.open_client_sockets:
+                    if yoav_socket!=socket:
+                        yoav_socket.send("game_over".encode())
+                quit()
+            if string=="you_lost":
+                for yoav_socket in self.open_client_sockets:
+                    if yoav_socket!=socket:
+                        yoav_socket.send("you_lost".encode())
+                quit()
             if (string!=''):
-                print ("recveddddd")
                 arr=string.split("/r/n")
                 x=arr[0]
                 y=arr[1]
                 x1=arr[2]
                 y1=arr[3]
                 tupl=(x,y,x1,y1)
+                
                 for ttt in self.empty:
-                    if x1 in ttt and y1 in ttt:
-                        chachaw=True
-                if chachaw==False:
+                    chachaw=False
+                    #if x1 in ttt and y1 in ttt:
+                        #chachaw=True
+                if chachaw==False and tupl not in self.empty:
                     self.empty.append(tupl)
                 #break
             string1=""
             for tup in self.empty:
                 
                 
-                string1=string1+"/r/n"+tup[2]+","+tup[3]+"|"+tup[1]+","+tup[0]
+                string1=string1+"/r/n"+tup[2]+","+tup[3]+"|"+tup[0]+","+tup[1]
             messages_to_send.append((socket,string1))   
-            # for my_socket in open_client_sockets:
-                # if my_socket!=socket:
-                    # my_socket.send(string1.encode())
             self.send_waiting_messages1(self.open_client_sockets,messages_to_send)
     # פעולת ההכנה לשליחה של חלקי הפאזל ללקוח שולחת לשחקן הראשון חצי ולשחקן השני חצי מהחלקים המעורבבים במיקס                 
     def to_send(self,name):
-        if (name==0):
-            
-            mix=[[]]
-            for i in range (1):
-                for t in range (len(self.items[i])):
-                    mix[i].append(self.items[i][t])
+        global numm
+        half=int(numm/2)
+        if numm%2==0:
+            if name ==0:
+                mix=[[]]
+                for i in range (half):
+                    for t in range (numm):
+                        mix[i].append(self.items[i][t])
+                    mix.append([])
                 mix.append([])
-            mix.append([])
-            for t in range (1):
-                mix[1].append(self.items[1][t])
-            return mix 
-        elif(name==1):
-            mix1=[[]]
-            for i in range (2,3):
-                for t in range (len(self.items[i])):
-                    mix1[i-2].append(self.items[i][t])
+                return mix
+            elif name==1:
+                mix1=[[]]
+                for i in range (half,numm):
+                    for t in range (numm):
+                        mix1[i-half].append(self.items[i][t])
+                    mix1.append([])
                 mix1.append([])
-            mix1.append([])
-            for k in range (1,3):
+                return mix1
+        else: 
+            half_down=math.floor(numm/2)
+            if (name==0):
                 
-                popai=self.items[1][k]
-                mix1[1].append(popai)
-            
-            return mix1 
+                mix=[[]]
+                for i in range (half_down):
+                    for t in range (numm):
+                        mix[i].append(self.items[i][t])
+                    mix.append([])
+                mix.append([])
+                for t in range (half_down):
+                    mix[half_down].append(self.items[half_down][t])
+                return mix 
+            elif(name==1):
+                mix1=[[]]
+                for i in range (half_down+1,numm):
+                    for t in range (numm):
+                        mix1[i-half_down-1].append(self.items[i][t])
+                    mix1.append([])
+                mix1.append([])
+                for k in range (half_down,numm):
+                    popai=self.items[half_down][k]
+                    mix1[half_down].append(popai)
+                
+                return mix1 
     #פעולה היוצרת עירבוב של מיקומים במערך דו מימדי 
     def mixing_numbers(all_image):
         list1=[[]]
         list1.append([])
-        for i in range (3): 
-            for t in range(3):
+        list2=[]
+        for i in range (numm): 
+            for t in range(numm):
                 list1[i].append(t)
             list1.append([])
-        list2=[0,1,2]
+        
+        for i in range (numm):
+            list2.append(i)
         mix=[[]]
         Flag = False
-        for i in range (3):
-            for t in range (3):
+        for i in range (numm):
+            for t in range (numm):
                 mix[i].append(None)
             mix .append([])
-        for i in range(3):
-            for f in range (3):
+        for i in range(numm):
+            for f in range (numm):
                 
                 while (Flag==False):
+                
                     y=random.choice(list2)
                     m=random.choice(list1[y])
                     
@@ -156,10 +190,12 @@ class game:
             (client_socket, data) = message
             
             # if it possible to write to the socket
-            for my_socket in wlist:
+            
+            for my_socket in self.open_client_sockets:
                 if my_socket!=client_socket:
-                    client_socket.send(data.encode())
-                    print ("sent")
+                    my_socket.send(data.encode())
+                if my_socket==client_socket:
+                    print ("")
             messages_to_send.remove(message)
 #פעולה המקבלת רשימה של הודעות  ושולחת אותן ללקוחות השונים        
 def send_waiting_messages(wlist, messages_to_send):
@@ -182,6 +218,14 @@ while (not sent):
             (new_socket,adress)=server_socket.accept()
             if new_socket not in open_client_sockets:
                 open_client_sockets.append(new_socket)
+                new_socket.send(str(len(open_client_sockets)).encode())
+                if (len(open_client_sockets)!=1):
+                    new_socket.send(str(numm).encode())
+                if len(open_client_sockets)==1:
+                    
+                    numm=open_client_sockets[0] .recv(1024).decode()
+                    numm=int(numm)
+                    
            
         else:
             
@@ -198,7 +242,7 @@ while (not sent):
                 waiting=True
                 
             if(len(preperd)==len(open_client_sockets)):
-                with open("comp.jpg", 'rb') as filesent:
+                with open(file_location, 'rb') as filesent:
                     data = filesent.read()
                     file_len = len(data)
 
@@ -230,7 +274,7 @@ while (not sent):
                     messages_to_send.append((the_socket, data.decode()))
       
     send_waiting_messages(wlist,messages_to_send)
-imageObject=Image.open("comp.jpg")
+imageObject=Image.open(file_location)
 
 g1=game(imageObject,open_client_sockets)
 #שליחה ללקוחות את רשימת החלקים שלהם 
