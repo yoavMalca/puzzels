@@ -8,6 +8,7 @@ import random
 import time
 import msvcrt as m
 import math 
+import sqlite3
 server_socket=socket.socket()
 server_socket.bind(('0.0.0.0',8820))
 server_socket.listen(5)
@@ -15,6 +16,21 @@ open_client_sockets=[]
 messages_to_send=[]
 numm=0
 file_location="watermelon.jpg"
+
+
+conn = sqlite3.connect('game.db')
+num = random.randrange(0, 4)
+cursor = conn.execute("SELECT * from yoav")
+rows = cursor.fetchall()
+theRow = rows[num]
+image = theRow[0]
+
+
+
+
+
+
+
 class game:
     def __init__(self,ImageObject,open_client_sockets):
         self.ImageObject=ImageObject# תמונת פתירת הפאזל

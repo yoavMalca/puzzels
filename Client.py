@@ -8,9 +8,9 @@ import random
 import time
 import msvcrt as m
 my_socket = socket.socket()
-ip=input("enter ip")
-port=input("enter port")
-my_socket.connect((ip, port))
+ip=input("enter the ip")
+port=input("entee port")
+my_socket.connect(("ip",int(port)))
 LARGE_FONT= ("Verdana", 12)
 sent1=False
 xxx1=-1
@@ -199,8 +199,12 @@ class client:
                     kkk=(int(label.grid_info()["row"]),int(label.grid_info()["column"]))
                     if (kkk in self.forgotten):
                         flag=True 
-                        #label.config(image='',background="black")
-                        
+                        # label.destroy()
+                    # if(kkk[0]>=len(panel)):
+                       # label.destroy()
+                    
+                    # if(kkk[1]>=len(panel[len(panel[kkk[0]])-1])):
+                        # label.destroy()
         if self.starter==False:
             data=self.server_socket.recv(1024)
             if data.decode()=="game_over":
