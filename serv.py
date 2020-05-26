@@ -1,3 +1,4 @@
+
 import socket
 import select
 import sys
@@ -10,20 +11,20 @@ import msvcrt as m
 import math 
 import sqlite3
 server_socket=socket.socket()
-server_socket.bind(('0.0.0.0',8820))
+server_socket.bind(('0.0.0.0',8850))
 server_socket.listen(5)
 open_client_sockets=[]
 messages_to_send=[]
 numm=0
-file_location="watermelon.jpg"
+file_location="comp.jpg"
 
 
-conn = sqlite3.connect('game.db')
-num = random.randrange(0, 4)
-cursor = conn.execute("SELECT * from yoav")
-rows = cursor.fetchall()
-theRow = rows[num]
-image = theRow[0]
+# conn = sqlite3.connect('game.db')
+# num = random.randrange(0, 4)
+# cursor = conn.execute("SELECT * from yoav")
+# rows = cursor.fetchall()
+# theRow = rows[num]
+# image = theRow[0]
 
 
 
@@ -195,7 +196,7 @@ class game:
                     
 
                    
-                Flag=False		
+                Flag=False      
                 
         return mix  
         
@@ -249,15 +250,19 @@ while (not sent):
             data = current_socket.recv(1024)
             
             #אם אחד הלקוחותישלח את מילת הקוד אז השרת ישלח לו אותה חזרה 
-            if (data.decode()=="sendme" and len(open_client_sockets)==2):
+            if (len(open_client_sockets)==2):
+                
+                
                 for ha_socket in open_client_sockets:
                         ha_socket.send("sendme".encode())
+            
             #אחרי שהלקוחקיבלאת מילת הקוד הוא ישלח שהוא מוכן לקבל את התמונה ואז השרת ישלח לו את תמונת הפאזל             
             if data.decode()=="ready":
+                print ("inn")
                 preperd.append(current_socket)
                 waiting=True
                 
-            if(len(preperd)==len(open_client_sockets)):
+            if(len(preperd)==2):
                 with open(file_location, 'rb') as filesent:
                     data = filesent.read()
                     file_len = len(data)
@@ -268,6 +273,8 @@ while (not sent):
                     msg = msg.encode('latin-1')
                     for socket in open_client_sockets:
                         socket.send(msg)
+                        socket.recv(1024)
+                        
                     #data = data.encode('latin-1')
                     for socket in open_client_sockets:
                         if socket in wlist:
