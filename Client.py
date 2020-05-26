@@ -8,7 +8,9 @@ import random
 import time
 import msvcrt as m
 my_socket = socket.socket()
-my_socket.connect(("127.0.0.1", 8820))
+ip=input("enter ip")
+port=input("enter port")
+my_socket.connect((ip, port))
 LARGE_FONT= ("Verdana", 12)
 sent1=False
 xxx1=-1
